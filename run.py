@@ -92,7 +92,6 @@ def expand_node_top(node, by, dirx):
             # if moving diagonal
             if dirx == (1, 1):
                 # if the characters are equal
-                print(new)
                 if u[new[0]-1] == v[new[1]-1]:
                     # can still spare one more move
                     for x in [(0, 1), (1, 0), (1, 1)]:
@@ -137,12 +136,12 @@ def find_points(start, end):
     global top_frontier, bot_frontier
     global new_top_frontier, new_bot_frontier
 
-    print(start, end)
-
     new_top_frontier = []
     new_bot_frontier = []
     top_frontier = [start]
     bot_frontier = [end]
+
+    print("new: {} {}".format(start, end))
 
     if start == end:
         # deal with connections if start and end are near
@@ -150,15 +149,21 @@ def find_points(start, end):
         return
     else:
         # first expand start and end by length 0 if possible
+
         # top_frontier = expand_node_top(start, 0, (1, 1))
         # bot_frontier = expand_node_bot(end, 0, (-1, -1))
 
         # expand top
         while 0==0:
+            print(top_frontier)
+            print(bot_frontier)
+
+            print("")
+
             # SEARCH DOWN
             for fnode in top_frontier:
                 # expand by 1 in all directions
-                for dirx in [(0, 1), (1, 0), (1, 1)]:
+                for dirx in [(1, 1), (0, 1), (1, 0)]:
                     found, (up, down) = expand_node_top(fnode, 1, dirx)
                     if found:
                         find_points(start, up)
@@ -170,7 +175,7 @@ def find_points(start, end):
             # SEARCH UP
             for fnode in bot_frontier:
                 # expand by 1 in all directions
-                for dirx in [(0, -1), (-1, 0), (-1, -1)]:
+                for dirx in [(-1, -1), (0, -1), (-1, 0)]:
                     found, (up, down) = expand_node_bot(fnode, 1, dirx)
                     if found:
                         find_points(start, up)
@@ -185,9 +190,52 @@ def create_path():
 
     path = []
 
-    cur = p
+    cur = (0, 0)
+    while cur != None:
+        cur = ppoints[cur]
+        path.append(cur)
+
+    # remove last two
+    path = path[:-1]
+
+    # subtract 1 from each index (to get indices of string, not matrix)
+    for i in range(len(path)):
+        path[i] = (path[i][0]-1, path[i][1]-1)
 
     return path
+
+
+def create_alignment():
+    global path
+    # alignment
+    alignment = []
+    # the first value is always (0,0)
+    prev = (0, 0)
+    # we skip the first value
+    distance = 0
+    for val in path[1:]:
+        if tm(val, prev) == (1, 1):
+            # if diagonal
+            alignment.append((u[prev[0]], v[prev[1]]))
+            if u[prev[0]] != v[prev[1]]:
+                distance += 1
+        elif tm(val, prev) == (1, 0):
+            alignment.append((u[prev[0]], "-"))
+            distance += 1
+        elif tm(val, prev) == (0, 1):
+            alignment.append(("-", v[prev[1]]))
+            distance += 1
+
+        prev = val
+
+
+
+    return alignment, distance
+
+
+def tm(t1, t2):
+    # tup minus
+    return (t1[0]-t2[0], t1[1]-t2[1])
 
 
 def mm_alg():
@@ -196,6 +244,7 @@ def mm_alg():
     """
     global u, v
     global ppoints
+    global path
 
     # linked list
     start = (0 , 0)
@@ -208,13 +257,11 @@ def mm_alg():
 
     find_points(start, end)
 
-    print(ppoints)
+    path = create_path()
 
-    path = create_path(ppoints)
+    alignment, distance = create_alignment()
 
-    alignment, score = create_alignment(path)
-
-    return alignment, score
+    return alignment, distance
 
 
 if __name__ == "__main__":
@@ -224,4 +271,9 @@ if __name__ == "__main__":
     u = "ABCAC"
     v = "ACBC"
 
-    mm_alg()
+    a, d = mm_alg()
+
+    print("Alignment:\n")
+    for i in a:
+        print(i)
+    print("\n\nDistance:\n\n{}".format(d))
