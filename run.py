@@ -141,8 +141,6 @@ def find_points(start, end):
     top_frontier = [start]
     bot_frontier = [end]
 
-    print("new: {} {}".format(start, end))
-
     if start == end:
         # deal with connections if start and end are near
         # NOTE may need to fix condition above
@@ -150,16 +148,30 @@ def find_points(start, end):
     else:
         # first expand start and end by length 0 if possible
 
-        # top_frontier = expand_node_top(start, 0, (1, 1))
-        # bot_frontier = expand_node_bot(end, 0, (-1, -1))
+        # NOTE: START OF F'D UP STUFF
+
+        found, (up, down) = expand_node_top(start, 0, (1, 1))
+        if found:
+            find_points(start, up)
+            find_points(down, end)
+            return
+        if new_top_frontier != []:
+            top_frontier = list(set(new_top_frontier))
+            new_top_frontier = []
+
+        found, (up, down) = expand_node_bot(end, 0, (-1, -1))
+        if found:
+            find_points(start, up)
+            find_points(down, end)
+            return
+        if new_bot_frontier != []:
+            bot_frontier = list(set(new_bot_frontier))
+            new_bot_frontier = []
+
+        # NOTE: END OF F'D UP STUFF
 
         # expand top
         while 0==0:
-            print(top_frontier)
-            print(bot_frontier)
-
-            print("")
-
             # SEARCH DOWN
             for fnode in top_frontier:
                 # expand by 1 in all directions
@@ -268,8 +280,10 @@ if __name__ == "__main__":
     # strings
     global u, v
 
-    u = "ABCAC"
-    v = "ACBC"
+
+    # SET STRINGS HERE
+    u = "asdflkjdfj"
+    v = "asdfjsdjkfj"
 
     a, d = mm_alg()
 
